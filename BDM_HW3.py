@@ -5,7 +5,7 @@ import csv
 if __name__=='__main__':
     sc = SparkContext()
     data = sc.textFile('/tmp/bdm/complaints.csv') 
-    header = data.first() 
+    header = data.take(3) 
     data = data.filter(lambda x: x != header) \
         .mapPartitions(lambda x: csv.reader(x, delimiter=',')) \
         .map(lambda x: ((x[1],dateutil.parser.parse(x[0]).year,x[7]),1)) \
