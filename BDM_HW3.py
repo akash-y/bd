@@ -1,6 +1,5 @@
 from pyspark import SparkContext
 sc = SparkContext()
-spark = SparkSession(sc)
 import dateutil
 import csv
     
