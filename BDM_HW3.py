@@ -4,7 +4,7 @@ import csv
 
 if __name__=='__main__':
     sc = SparkContext()
-    data = sc.textFile('/tmp/bdm/complaints.csv') 
+    data = sc.textFile('/tmp/bdm/complaints.csv',use_unicode=True) 
     header = data.take(3) 
     data = data.filter(lambda x: x != header) \
         .mapPartitions(lambda x: csv.reader(x, delimiter=',')) \
