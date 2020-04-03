@@ -3,6 +3,7 @@ import dateutil
 import csv
 
 if __name__=='__main__':
+    sc = SparkContext()
     data = sc.textFile('/tmp/bdm/complaints.csv') 
     header = data.first() 
     data = data.filter(lambda x: x != header) \
