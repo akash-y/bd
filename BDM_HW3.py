@@ -23,9 +23,7 @@ if __name__=='__main__':
             .reduceByKey(lambda x,y: x + y) \
             .map(lambda x: (x[0][0], x[0][1], sum(i for i in x[1][1::2]),len(x[1][::2]),
                             (100*max(i for i in x[1][1::2])/sum(i for i in x[1][1::2])))) \
-            .repartition(1)
-            .write.format("com.databricks.spark.csv")
-            .option("header", "true")
-            .save("bdm3.csv")
+            .map(lambda x: '\t'.join(x))
+            .saveAsTextFile(output_sys)
 
 
