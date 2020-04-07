@@ -1,5 +1,5 @@
 from pyspark import SparkContext
-import dateutil
+import dateutil.parser 
 import csv
 import sys
 
