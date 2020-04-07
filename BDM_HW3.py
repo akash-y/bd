@@ -15,6 +15,8 @@ if __name__=='__main__':
     header = data.first() 
     data = data.filter(lambda x: x != header) \
             .mapPartitions(lambda x: csv.reader(x, delimiter=',')) \
+            .filter(lambda x: len(x) > 7 and type(x[0]) == str) \
+            .filter(lambda x: len(x[0]) == 10) \
             .map(lambda x: ((x[1],dateutil.parser.parse(x[0]).year,x[7]),1)) \
             .reduceByKey(lambda x,y: x+y) \
             .map(lambda x: ((x[0][0], x[0][1]),(x[0][2],x[1]))) \
