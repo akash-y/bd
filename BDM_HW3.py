@@ -1,5 +1,4 @@
 from pyspark import SparkContext
-sc = SparkContext()
 import dateutil
 import csv
 import sys
