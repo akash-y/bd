@@ -55,8 +55,8 @@ def processTrips(pid, records):
             match2 = None
             b_zone = findZone(p, index1, zones1)
             n_zone = findZone(q, index2, zones2)
-            b_val = zones1['boroname']['b_zone']
-            n_val = zones2['neighborhood']['n_zone']
+            b_val = zones1['boroname'][b_zone]
+            n_val = zones2['neighborhood'][n_zone]
             nb_zone = b_val,n_val
             
             if nb_zone:
