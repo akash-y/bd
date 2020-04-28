@@ -76,7 +76,7 @@ def processTrips(pid, records):
             nb_zone = b_zone,n_zone
             
             if nb_zone:
-            counts[nb_zone] = counts.get(nb_zone, 0) + 1 
+                counts[nb_zone] = counts.get(nb_zone, 0) + 1 
         
         except(ValueError, IndexError):
             pass
