@@ -66,8 +66,8 @@ def processTrips(pid, records):
     
     for row in reader:
         if len(row)==18:
-            try:
-                
+            
+            try:    
                 p = geom.Point(proj(float(row[5]), float(row[6]))) 
                 q = geom.Point(proj(float(row[9]), float(row[10])))
                 match1 = None
@@ -82,7 +82,7 @@ def processTrips(pid, records):
             if nb_zone:
                 counts[nb_zone] = counts.get(nb_zone, 0) + 1   
 
-        return counts.items()
+    return counts.items()
 
 if __name__== "__main__":
 
