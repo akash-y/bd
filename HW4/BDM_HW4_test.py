@@ -12,8 +12,8 @@ def createIndex(shapefile):
     import rtree
     import fiona.crs
     import geopandas as gpd
-    zones1 = gpd.read_file(shapefile).to_crs(fiona.crs.from_epsg(2263))
-    index1 = rtree.Rtree()
+    zones = gpd.read_file(shapefile).to_crs(fiona.crs.from_epsg(2263))
+    index = rtree.Rtree()
     for idx,geometry in enumerate(zones.geometry):
         index.insert(idx, geometry.bounds)
     return (index, zones)
