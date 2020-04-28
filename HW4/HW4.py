@@ -65,23 +65,24 @@ def processTrips(pid, records):
     output={}
     
     for row in reader:
-        if len(row)==18:
+        
+        try:
+            p = geom.Point(proj(float(row[3]), float(row[2]))) 
+            q = geom.Point(proj(float(row[5]), float(row[4])))
+            match1 = None
+            match2 = None
+            b_zone = findPickUpZone(p, index1, zones1)
+            n_zone = findDropZone(q, index2, zones2)
+            nb_zone = b_zone,n_zone
             
-            try:    
-                p = geom.Point(proj(float(row[5]), float(row[6]))) 
-                q = geom.Point(proj(float(row[9]), float(row[10])))
-                match1 = None
-                match2 = None
-                b_zone = findPickUpZone(p, index1, zones1)
-                n_zone = findDropZone(q, index2, zones2)
-                nb_zone = b_zone,n_zone
-
-            except:
-                continue
-
             if nb_zone:
-                counts[nb_zone] = counts.get(nb_zone, 0) + 1   
-
+            counts[nb_zone] = counts.get(nb_zone, 0) + 1 
+        
+        except(ValueError, IndexError):
+            pass
+                
+          
+ 
     return counts.items()
 
 def toCSVLine(data):
