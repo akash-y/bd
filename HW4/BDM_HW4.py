@@ -34,7 +34,7 @@ def findPickUpZone(p, index1, zones1):
     match1 = index1.intersection((p.x, p.y, p.x, p.y))
     for idx in match1:
         if zones1.geometry[idx].contains(p):
-            return zones1.boro_name[idx]
+            return zones1.boroname[idx]
     return None
 
 def findDropZone(q, index2, zones2):
@@ -42,7 +42,7 @@ def findDropZone(q, index2, zones2):
     match2 = index2.intersection((q.x, q.y, q.x, q.y))
     for idx in match2:
         if zones2.geometry[idx].contains(q):
-            return zones2.ntaname[idx]
+            return zones2.neighborhood[idx]
     return None
 
 def processTrips(pid, records):
