@@ -67,8 +67,8 @@ def processTrips(pid, records):
     for row in reader:
         
         try:
-            p = geom.Point(proj(float(row[3]), float(row[2]))) 
-            q = geom.Point(proj(float(row[5]), float(row[4])))
+            p = geom.Point(proj(float(row[5]), float(row[6]))) 
+            q = geom.Point(proj(float(row[9]), float(row[10])))
             match1 = None
             match2 = None
             b_zone = findPickUpZone(p, index1, zones1)
