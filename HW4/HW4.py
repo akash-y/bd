@@ -80,7 +80,7 @@ def processTrips(pid, records):
             if nb_zone:
                 counts[nb_zone] = counts.get(nb_zone, 0) + 1   
 
-     return counts.items()
+        return counts.items()
 
 if__name__=="__main__":
 
