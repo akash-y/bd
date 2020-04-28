@@ -1,3 +1,4 @@
+from pyspark import SparkContext
 import csv
 import pyproj
 import shapely.geometry as geom
