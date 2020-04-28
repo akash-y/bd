@@ -82,7 +82,7 @@ def processTrips(pid, records):
 
         return counts.items()
 
-if__name__=="__main__":
+if __name__== "__main__":
 
     sc=SparkContext()
 
