@@ -65,7 +65,7 @@ def processTrips(pid, records):
     output={}
     
     for row in reader:
-        if len(row[10])>4:
+        if len(row)==18:
             try:
                 
                 p = geom.Point(proj(float(row[5]), float(row[6]))) 
