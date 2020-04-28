@@ -99,6 +99,5 @@ if __name__== "__main__":
         .flatMap(lambda g: nlargest(3,g[1],key=lambda x:x[2])) \
         .map(lambda x:(x[0],(x[1],x[2]))) \
         .reduceByKey(lambda x,y: (x,y)) \
-        .sortByKey()\
         .saveAsTextFile(sys_output)
                  
