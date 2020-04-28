@@ -84,6 +84,9 @@ def processTrips(pid, records):
 
     return counts.items()
 
+def toCSVLine(data):
+    return ','.join(str(d) for d in data)
+
 if __name__== "__main__":
 
     sc=SparkContext()
@@ -94,10 +97,14 @@ if __name__== "__main__":
     rdd = sc.textFile(sys_input)
     rdd.mapPartitionsWithIndex(processTrips) \
         .reduceByKey(lambda x,y: x+y) \
+        .filter(lambda x: x[0][0] != None) \
+        .filter(lambda x: x[0][1] != None) \
         .map(lambda x: (x[0][0],x[0][1],x[1]))  \
         .groupBy(lambda x:x[0]) \
         .flatMap(lambda g: nlargest(3,g[1],key=lambda x:x[2])) \
         .map(lambda x:(x[0],(x[1],x[2]))) \
-        .reduceByKey(lambda x,y: (x,y)) \
+        .groupByKey().mapValues(list) \
+        .sortByKey() \
+        .map(toCSVLine) \
         .saveAsTextFile(sys_output)
                  
