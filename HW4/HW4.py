@@ -4,6 +4,7 @@ import pyproj
 import shapely.geometry as geom
 from heapq import nlargest
 import heapq
+import sys
 
 
 def createBoroughsIndex(shapefile):
