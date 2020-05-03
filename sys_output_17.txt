@@ -1,0 +1,5 @@
+Bronx,[('Mott Haven', 1357), ('Castle Hill', 1305), ('Parkchester', 986)]
+Brooklyn,[('Williamsburg', 32134), ('Midtown', 15224), ('Greenpoint', 13808)]
+Manhattan,[('Midtown', 2437246), ('Upper East Side', 1997963), ('Upper West Side', 1284561)]
+Queens,[('Midtown', 112381), ('Upper East Side', 53440), ('Long Island City', 45699)]
+Staten Island,[('New Springville', 128), ('Freshkills Park', 66), ('Emerson Hill', 63)]
