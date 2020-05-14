@@ -49,8 +49,9 @@ def ticketprocess(pid,records):
                 
                 else:
                     
-                    split_val = int(row[23].split('-')[0])
-                    hno = int(row[23].split('-')[1])
+                    
+                    split_val = int(row[23].replace('-', ' ').split(' ')[0])
+                    hno = int(row[23].replace('-', ' ').split(' ')[1])
                     house_number = int(str(split_val)+str(hno))
                     
                     odd_even = None
@@ -126,8 +127,8 @@ def streetprocess(pid,records):
                         continue
                     
                 else:
-                    ll_split_val = int(row[2].split('-')[0])
-                    ll_hno = int(row[2].split('-')[1])
+                    ll_split_val = int(row[2].replace('-', ' ').split(' ')[0])
+                    ll_hno = int(row[2].replace('-', ' ').split(' ')[1])
                     ll_house_number = int(str(ll_split_val)+str(ll_hno))
                                         
             else:
@@ -144,8 +145,8 @@ def streetprocess(pid,records):
                         continue
                     
                 else:
-                    lh_split_val = int(row[3].split('-')[0])
-                    lh_hno = int(row[3].split('-')[1])
+                    lh_split_val = int(row[3].replace('-', ' ').split(' ')[0])
+                    lh_hno = int(row[3].replace('-', ' ').split(' ')[1])
                     lh_house_number = int(str(lh_split_val)+str(lh_hno))
                     
             else:
@@ -161,8 +162,8 @@ def streetprocess(pid,records):
                         continue
                     
                 else:
-                    rl_split_val = int(row[4].split('-')[0])
-                    rl_hno = int(row[4].split('-')[1])
+                    rl_split_val = int(row[4].replace('-', ' ').split(' ')[0])
+                    rl_hno = int(row[4].replace('-', ' ').split(' ')[1])
                     rl_house_number = int(str(rl_split_val)+str(rl_hno))
                                         
             else:
@@ -179,8 +180,8 @@ def streetprocess(pid,records):
                         continue
                     
                 else:
-                    rh_split_val = int(row[5].split('-')[0])
-                    rh_hno = int(row[5].split('-')[1])
+                    rh_split_val = int(row[5].replace('-', ' ').split(' ')[0])
+                    rh_hno = int(row[5].replace('-', ' ').split(' ')[1])
                     rh_house_number = int(str(rh_split_val)+str(rh_hno))
                     
             else:
