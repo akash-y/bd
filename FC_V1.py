@@ -231,7 +231,7 @@ if __name__ == "__main__":
     centerline_df = spark.createDataFrame(counts2,schema=('physical_id','low_house_number','high_house_number','street_name','st_name','boro_code','odd_even'))
 
 
-    final_df = centerline_df.join(violations_df.hint("broadcast"),
+    final_df = centerline_df.join(violations_df,
                               [centerline_df.street_name == violations_df.street_name,
                               centerline_df.boro_code == violations_df.boro,
                               centerline_df.odd_even == violations_df.odd_even,
