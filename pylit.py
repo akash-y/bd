@@ -1,0 +1,94 @@
+import pyspark.sql.functions as f
+from pyspark.sql.types import StringType
+from pyspark.sql.functions import udf
+from pyspark.sql.functions import regexp_replace, col
+from pyspark.sql.functions import lit
+from pyspark.sql.functions import *
+
+
+
+def translate(mapping):
+    def translate_(col):
+        return mapping.get(col)
+    return udf(translate_, StringType())
+
+def func_slope(v1,v2,v3,v4,v5):
+    
+    try:
+        X = np.array([2015,2016,2017,2018,2019])
+        y = np.array([v1,v2])
+    
+        m = (((np.mean(X)*np.mean(y)) - np.mean(X*y)) / ((np.mean(X)**2) - np.mean(X*X)))
+    
+        return float(m)
+    except:
+        return 0.0
+
+calculate_slope_udf = udf(func_slope, FloatType())
+
+boro_dict = {'MAN':1,'MH':1,'MN':1,'NEWY':1,'NEW Y':1,'NY':1,
+                'BRONX':2,'BX':2,
+                'BK':3,'K':3,'KING':3,'KINGS':3,
+                'Q':4,'QN':4,'QNS':4,'QU':4,'QUEEN':4,
+                'R':5,'RICHMOND':5}
+
+
+if __name__ == "__main__":
+
+    sc = SparkContext()
+    spark = SparkSession(sc)    
+
+    df_violations = spark.read.csv('hdfs:///tmp/bdm/nyc_parking_violation/',header=True,inferSchema=True)
+    df_violations=df_violations.select("House Number","Street Name","Issue Date","Violation County")
+    df_violations = df_violations.withColumn("Street Name",f.upper(f.col("Street Name")))
+
+
+    df_violations=df_violations.withColumn("Violation County", translate(boro_dict)("Violation County"))
+    df_violations=df_violations.select(regexp_replace(col("House Number"), "-", " ").alias("House Number"),"Street Name","Violation County","Issue Date")
+    df_violations=df_violations.select(regexp_replace(col("House Number"), " ", "").alias("House Number"),"Street Name","Violation County","Issue Date")
+    df_violations = df_violations.filter((df_violations['House Number'] != 'N') & (df_violations['House Number'] != 'S') & (df_violations['House Number'] != 'E') & (df_violations['House Number'] != 'W'))
+    df_violations = df_violations.withColumn("Odd_Even",f.when((f.col("House Number")%2==0),"Even") \
+                                        .otherwise("Odd"))
+
+    df_violations = df_violations.withColumn('Issue Date',f.year(f.to_timestamp('Issue Date', 'MM/dd/yyyy')))
+
+
+    df_centerline = spark.read.csv('hdfs:///tmp/bdm/nyc_cscl.csv',header=True,inferSchema=True)
+    df_centerline_l = df_centerline.select("PHYSICALID","L_LOW_HN","L_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_r = df_centerline.select("PHYSICALID","R_LOW_HN","R_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+
+    df_centerline_l = df_centerline_l.select('PHYSICALID',regexp_replace(col("L_LOW_HN"), "-", " ").alias("L_LOW_HN"),"L_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_l = df_centerline_l.select('PHYSICALID',regexp_replace(col("L_HIGH_HN"), "-", " ").alias("L_HIGH_HN"),"L_LOW_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_l = df_centerline_l.select('PHYSICALID',regexp_replace(col("L_HIGH_HN"), " ", "").alias("L_HIGH_HN"),"L_LOW_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_l = df_centerline_l.select('PHYSICALID',regexp_replace(col("L_LOW_HN"), " ", "").alias("L_LOW_HN"),"L_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+
+    df_centerline_r = df_centerline_r.select('PHYSICALID',regexp_replace(col("R_LOW_HN"), "-", " ").alias("R_LOW_HN"),"R_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_r = df_centerline_r.select('PHYSICALID',regexp_replace(col("R_HIGH_HN"), "-", " ").alias("R_HIGH_HN"),"R_LOW_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_r = df_centerline_r.select('PHYSICALID',regexp_replace(col("R_HIGH_HN"), " ", "").alias("R_HIGH_HN"),"R_LOW_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_r = df_centerline_r.select('PHYSICALID',regexp_replace(col("R_LOW_HN"), " ", "").alias("R_LOW_HN"),"R_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+
+    df_centerline_l=df_centerline_l.withColumn('Odd_Even', lit("Odd"))
+    df_centerline_r=df_centerline_r.withColumn('Odd_Even', lit("Even"))
+
+
+    df_centerline = df_centerline_l.union(df_centerline_r)
+
+    df_centerline = df_centerline.select('PHYSICALID',col('L_LOW_HN').alias('LOW_HN'),col('L_HIGH_HN').alias('HIGH_HN'),'ST_NAME','FULL_STREE','BOROCODE','Odd_Even')
+
+    final_df = df_violations.join(broadcast(df_centerline),
+                             [(df_centerline['ST_NAME'] == df_violations['Street Name']) | (df_centerline['FULL_STREE'] == df_violations['Street Name']),
+                              df_centerline['BOROCODE'] == df_violations['Violation County'], 
+                              df_violations['Odd_Even'] == df_centerline['Odd_Even'],
+                              (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
+                             ]).groupby(df_centerline['PHYSICALID'],df_violations['Issue Date']).pivot("Issue Date").count().sort('PHYSICALID')
+
+    columns_to_drop = ['Issue Date']
+
+    final_df = final_df.drop(*columns_to_drop)
+
+    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['2015'],final_df['2016'],final_df['2017'],final_df['2018'],final_df['2019'])))
+
+    final_df = final_df.select('PHYSICALID',col('2016').alias('COUNT_2016'),col('2017').alias('COUNT_2017'),'OLS_COEFF')
+
+
+    final_df.show(3000)
