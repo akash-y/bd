@@ -14,6 +14,7 @@ import sys
 import time
 import csv
 
+start_time = time.time()
 
 def ticketprocess(pid,records):
     
@@ -226,7 +227,7 @@ if __name__ == "__main__":
     sc = SparkContext()
     spark = SparkSession(sc)
     
-    #sys_output = sys.argv[1]
+    sys_output = sys.argv[1]
 
     rdd = sc.textFile('hdfs:///tmp/bdm/nyc_parking_violation/')
     rdd2 = sc.textFile('hdfs:///tmp/bdm/nyc_cscl.csv')
@@ -249,5 +250,5 @@ if __name__ == "__main__":
     final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['COUNT_2015'],final_df['COUNT_2016'],final_df['COUNT_2017'],final_df['COUNT_2018'],final_df['COUNT_2019'])))
 
 
-    final_df.show(1000)
+    final_df.write.csv(sys_output)
     print('time taken:', time.time() - start_time)
