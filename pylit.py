@@ -64,11 +64,11 @@ if __name__ == "__main__":
 
     df_violations = df_violations.withColumn("House Number",regexp_replace(f.col("House Number"), " ", "").alias("House Number"))
 
-    df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
+    df_violations = df_violations.withColumn("House Number", df_violations["House Number"].cast(IntegerType()))
 
     df_violations = df_violations.withColumn("Odd_Even",f.when((f.col("House Number")%2==0),"Even").otherwise("Odd"))
 
-    df_violations = df_violations.groupby(df_violations.columns).count()
+    df_violations = df_violations.groupby(df_violations.columns).count().sort("House Number")
 
     df_violations = df_violations.groupby('House Number', 'Street Name', 'Violation County','Odd_Even').pivot('Issue Date', [2015,2016,2017,2018,2019]).agg(f.max('count'))
                                          
@@ -78,9 +78,9 @@ if __name__ == "__main__":
 
     df_centerline = spark.read.csv('hdfs:///tmp/bdm/nyc_cscl.csv',header=True)
 
-    df_centerline_l = df_centerline.select("PHYSICALID","L_LOW_HN","L_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_l = df_centerline.select("PHYSICALID","L_LOW_HN","L_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE").dropna()
     
-    df_centerline_r = df_centerline.select("PHYSICALID","R_LOW_HN","R_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE")
+    df_centerline_r = df_centerline.select("PHYSICALID","R_LOW_HN","R_HIGH_HN","ST_NAME","FULL_STREE","BOROCODE").dropna()
 
 
     df_centerline_l = df_centerline_l.filter(df_centerline_l['L_LOW_HN'].rlike('^[0-9]+([ -][0-9]+)?$'))
@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 
     final_df = f.broadcast(df_centerline).join(df_violations, 
-                                           [df_centerline['ST_NAME'] == df_violations['Street Name'] ,
+                                           [(df_centerline['ST_NAME'] == df_violations['Street Name']) | (df_centerline['FULL_STREE'] == df_violations['Street Name']),
                               df_centerline['BOROCODE'] == df_violations['Violation County'], 
                               df_violations['Odd_Even'] == df_centerline['Odd_Even'],
                               (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
