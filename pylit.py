@@ -64,13 +64,13 @@ if __name__ == "__main__":
 
     df_violations = df_violations.withColumn("House Number",regexp_replace(f.col("House Number"), " ", "").alias("House Number"))
 
-    #df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
+    df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
 
     df_violations = df_violations.withColumn("Odd_Even",f.when((f.col("House Number")%2==0),"Even").otherwise("Odd"))
 
     df_violations = df_violations.groupby(df_violations.columns).count()
 
-    df_violations = df_violations.groupby('House Number', 'Street Name', 'Violation County').pivot('Issue Date', [2015,2016,2017,2018,2019]).agg(f.max('count'))
+    df_violations = df_violations.groupby('House Number', 'Street Name', 'Violation County','Odd_Even').pivot('Issue Date', [2015,2016,2017,2018,2019]).agg(f.max('count'))
                                          
     df_violations.cache()
 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                               df_centerline['BOROCODE'] == df_violations['Violation County'], 
                               df_violations['Odd_Even'] == df_centerline['Odd_Even'],
                               (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
-                             ],how = 'right').groupby(df_centerline['PHYSICALID'],df_centerline).pivot("Issue Date").count().sort('PHYSICALID')
+                             ],how = 'right').sort('PHYSICALID').fillna(0)
 
     columns_to_drop = ['Issue Date']
 
