@@ -14,9 +14,6 @@ import sys
 import time
 import csv
 
-main() 
-
-start_time = time.time()
 
 def ticketprocess(pid,records):
     
