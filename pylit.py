@@ -1,5 +1,6 @@
 import pyspark.sql.functions as f
 from pyspark.sql.types import StringType
+from pyspark.sql.types import FloatType
 from pyspark.sql.functions import udf
 from pyspark.sql.functions import regexp_replace, col
 from pyspark.sql.functions import lit
