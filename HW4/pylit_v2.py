@@ -250,5 +250,5 @@ if __name__ == "__main__":
     final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['COUNT_2015'],final_df['COUNT_2016'],final_df['COUNT_2017'],final_df['COUNT_2018'],final_df['COUNT_2019'])))
 
 
-    final_df.write.csv(sys_output)
+    centerline_df.show(10000)
     print('time taken:', time.time() - start_time)
