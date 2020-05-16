@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     df_violations = df_violations.withColumn("House Number",regexp_replace(f.col("House Number"), " ", "").alias("House Number"))
 
-    df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
+    #df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
 
     df_violations = df_violations.withColumn("Odd_Even",f.when((f.col("House Number")%2==0),"Even").otherwise("Odd"))
 
