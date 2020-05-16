@@ -8,6 +8,7 @@ from pyspark.sql.functions import lit
 from pyspark.sql.functions import *
 from pyspark.sql import Row
 from pyspark.sql.types import FloatType
+from pyspark.sql.types import IntegerType
 import numpy as np
 import sys
 import time
