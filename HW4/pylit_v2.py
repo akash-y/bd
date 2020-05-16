@@ -238,13 +238,13 @@ if __name__ == "__main__":
     violations_df = spark.createDataFrame(counts, schema=('house_number','year','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even')).dropna(how='any')
     centerline_df = spark.createDataFrame(counts2,schema=('physical_id','low_house_number','high_house_number','street_name','boro_code','odd_even')).dropDuplicates().dropna(how='any').sort('physical_id')
 
-    final_df = violations_df.join(f.broadcast(centerline_df),
+    final_df = violations_df.join(centerline_df,
                               [centerline_df.street_name == violations_df.street_name,
                               centerline_df.boro_code == violations_df.boro,
                               centerline_df.odd_even == violations_df.odd_even,
                              (violations_df.house_number >= centerline_df.low_house_number) & 
                               (violations_df.house_number <= centerline_df.high_house_number)], 
-                              how ='right').groupby(centerline_df.physical_id).agg(sum(violations_df.Y2015).alias('COUNT_2015'),sum(violations_df.Y2016).alias('COUNT_2016'),sum(violations_df.Y2017).alias('COUNT_2017'),sum(violations_df.Y2018).alias('COUNT_2018'),sum(violations_df.Y2019).alias('COUNT_2019')).sort("physical_id")
+                              how ='left').groupby(centerline_df.physical_id).agg(sum(violations_df.Y2015).alias('COUNT_2015'),sum(violations_df.Y2016).alias('COUNT_2016'),sum(violations_df.Y2017).alias('COUNT_2017'),sum(violations_df.Y2018).alias('COUNT_2018'),sum(violations_df.Y2019).alias('COUNT_2019')).sort("physical_id")
 
     final_df = final_df.fillna(0)
 
