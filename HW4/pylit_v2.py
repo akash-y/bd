@@ -227,7 +227,7 @@ if __name__ == "__main__":
     sc = SparkContext()
     spark = SparkSession(sc)
     
-    sys_output = sys.argv[1]
+    #sys_output = sys.argv[1]
 
     rdd = sc.textFile('hdfs:///tmp/bdm/nyc_parking_violation/')
     rdd2 = sc.textFile('hdfs:///tmp/bdm/nyc_cscl.csv')
