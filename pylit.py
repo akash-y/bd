@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
     df_violations = df_violations.withColumn("House Number",regexp_replace(f.col("House Number"), " ", "").alias("House Number"))
 
-    #df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
+    df_violations = df_violations.withColumn('House Number', f.expr('transform(House Number, x-> int(x))'))
 
     df_violations = df_violations.withColumn("Odd_Even",f.when((f.col("House Number")%2==0),"Even").otherwise("Odd"))
 
@@ -100,11 +100,17 @@ if __name__ == "__main__":
 
     df_centerline_r = df_centerline_r.withColumn("R_LOW_HN",regexp_replace(regexp_replace(col("R_LOW_HN"), "-", " ")," ","").alias("R_LOW_HN"))
 
+    df_centerline_l = df_centerline_l.withColumn("L_LOW_HN", df_centerline_l["L_LOW_HN"].cast(IntegerType()))
 
+    df_centerline_r = df_centerline_r.withColumn("R_LOW_HN", df_centerline_r["R_LOW_HN"].cast(IntegerType()))
 
-    df_centerline_l=df_centerline_l.withColumn('Odd_Even', lit("Odd"))
+    df_centerline_l = df_centerline_l.withColumn("L_HIGH_HN", df_centerline_l["L_HIGH_HN"].cast(IntegerType()))
 
-    df_centerline_r=df_centerline_r.withColumn('Odd_Even', lit("Even"))
+    df_centerline_r = df_centerline_r.withColumn("R_HIGH_HN", df_centerline_r["R_HIGH_HN"].cast(IntegerType()))
+
+    df_centerline_l = df_centerline_l.withColumn("Odd_Even",f.when((f.col("L_LOW_HN")%2==0),"Even").otherwise("Odd"))
+
+    df_centerline_r = df_centerline_r.withColumn("Odd_Even",f.when((f.col("R_LOW_HN")%2==0),"Even").otherwise("Odd"))
 
                                          
     df_centerline = df_centerline_l.union(df_centerline_r)
@@ -113,25 +119,29 @@ if __name__ == "__main__":
 
     df_centerline = df_centerline.select(col('PHYSICALID'),col('L_LOW_HN').alias('LOW_HN'),col('L_HIGH_HN').alias('HIGH_HN'),'ST_NAME','FULL_STREE','BOROCODE','Odd_Even')
 
-    df_centerline = df_centerline.withColumn("PHYSICALID", df_centerline['PHYSICALID'].cast("int"))
+    df_centerline = df_centerline.withColumn("PHYSICALID", df_centerline['PHYSICALID'].cast("int")).sort('PHYSICALID')
 
     df_centerline.cache()
 
-    final_df = df_violations.join(f.broadcast(df_centerline),
-                             [(df_centerline['ST_NAME'] == df_violations['Street Name']) | (df_centerline['FULL_STREE'] == df_violations['Street Name']),
+
+
+
+    final_df = f.broadcast(df_centerline).join(df_violations, 
+                                           [(df_centerline['ST_NAME'] == df_violations['Street Name']) | (df_centerline['FULL_STREE'] == df_violations['Street Name']),
                               df_centerline['BOROCODE'] == df_violations['Violation County'], 
                               df_violations['Odd_Even'] == df_centerline['Odd_Even'],
                               (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
-                             ],how = 'right').sort('PHYSICALID').fillna(0)
+                             ],how = 'left').select('PHYSICALID','2015','2016','2017','2018','2019').groupby('PHYSICALID').agg(sum('2015'),sum('2016'),sum('2017'),sum('2018'),sum('2019'))
+
 
     columns_to_drop = ['Issue Date']
 
     final_df = final_df.drop(*columns_to_drop)
 
 
-    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['2015'],final_df['2016'],final_df['2017'],final_df['2018'],final_df['2019'])))
+    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['sum(2015)'],final_df['sum(2016)'],final_df['sum(2017)'],final_df['sum(2018)'],final_df['sum(2019)'])))
 
-    final_df = final_df.select('PHYSICALID',col('2015').alias('COUNT_2015'),col('2016').alias('COUNT_2016'),col('2017').alias('COUNT_2017'),col('2018').alias('COUNT_2018'),col('2019').alias('COUNT_2019'),'OLS_COEFF')
+    final_df = final_df.select('PHYSICALID',col('sum(2015)').alias('COUNT_2015'),col('sum(2016)').alias('COUNT_2016'),col('sum(2017)').alias('COUNT_2017'),col('sum(2018)').alias('COUNT_2018'),col('sum(2019)').alias('COUNT_2019'),'OLS_COEFF')
 
     final_df.show(3000)
 
