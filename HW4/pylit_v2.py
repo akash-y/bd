@@ -122,6 +122,7 @@ def streetprocess(pid,records):
         try:
              
             if row[2]:
+                
                 if row[2].isdigit():
                     
                     ll_house_number = int(row[2])
@@ -234,8 +235,8 @@ if __name__ == "__main__":
     counts = rdd.mapPartitionsWithIndex(ticketprocess)
     counts2 = rdd2.mapPartitionsWithIndex(streetprocess)
 
-    violations_df = spark.createDataFrame(counts, schema=('house_number','year','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even'))
-    centerline_df = spark.createDataFrame(counts2,schema=('physical_id','low_house_number','high_house_number','street_name','boro_code','odd_even')).dropDuplicates().sort('physical_id')
+    violations_df = spark.createDataFrame(counts, schema=('house_number','year','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even')).dropDuplicates().dropna(how='any)
+    centerline_df = spark.createDataFrame(counts2,schema=('physical_id','low_house_number','high_house_number','street_name','boro_code','odd_even')).dropDuplicates().dropna(how='any).sort('physical_id')
 
     final_df = violations_df.join(f.broadcast(centerline_df),
                               [centerline_df.street_name == violations_df.street_name,
@@ -250,5 +251,5 @@ if __name__ == "__main__":
     final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['COUNT_2015'],final_df['COUNT_2016'],final_df['COUNT_2017'],final_df['COUNT_2018'],final_df['COUNT_2019'])))
 
 
-    centerline_df.show(10000)
+    final_df.show(10000)
     print('time taken:', time.time() - start_time)
