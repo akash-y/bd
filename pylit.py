@@ -10,6 +10,7 @@ from pyspark.sql import Row
 from pyspark.sql.types import FloatType
 import numpy as np
 import sys
+import time
 import csv
 
 
@@ -55,7 +56,7 @@ if __name__ == "__main__":
 
     df_violations = df_violations.withColumn('Issue Date',f.year(f.to_timestamp('Issue Date', 'MM/dd/yyyy')))
 
-    df_violations = df_violations.filter(df_violations['Issue Date'].isin([2015,2016,2017,2018,2019]))
+    df_violations = df_violations.filter(df_violations['Issue Date'].isin(['2015','2016','2017','2018','2019']))
 
     df_violations = df_violations.filter(df_violations['House Number'].rlike('^[0-9]+([ -][0-9]+)?$'))
 
@@ -112,11 +113,11 @@ if __name__ == "__main__":
     df_centerline.cache()
 
     final_df = df_violations.join(f.broadcast(df_centerline),
-                             [df_centerline['ST_NAME'] == df_violations['Street Name'],
+                             [(df_centerline['ST_NAME'] == df_violations['Street Name']) | (df_centerline['FULL_STREE'] == df_violations['Street Name']),
                               df_centerline['BOROCODE'] == df_violations['Violation County'], 
                               df_violations['Odd_Even'] == df_centerline['Odd_Even'],
                               (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
-                             ]).groupby(df_centerline['PHYSICALID'],df_violations['Issue Date']).pivot("Issue Date").count().sort('PHYSICALID')
+                             ]).groupby(df_centerline['PHYSICALID'],df_violations['Issue Date']).pivot("Issue Date").agg(F.max('count')).sort('PHYSICALID')
 
     columns_to_drop = ['Issue Date']
 
