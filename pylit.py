@@ -127,7 +127,7 @@ if __name__ == "__main__":
 
 
     final_df = f.broadcast(df_centerline).join(df_violations, 
-                                           [(df_centerline['ST_NAME'] == df_violations['Street Name']) | (df_centerline['FULL_STREE'] == df_violations['Street Name']),
+                                           [df_centerline['ST_NAME'] == df_violations['Street Name'] ,
                               df_centerline['BOROCODE'] == df_violations['Violation County'], 
                               df_violations['Odd_Even'] == df_centerline['Odd_Even'],
                               (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
