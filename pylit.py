@@ -123,7 +123,7 @@ if __name__ == "__main__":
     final_df = final_df.drop(*columns_to_drop)
 
 
-    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['2016'],final_df['2017'])))
+    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['2015'],final_df['2016'],final_df['2017'],final_df['2018'],final_df['2019'])))
 
     final_df = final_df.select('PHYSICALID',col('2015').alias('COUNT_2015'),col('2016').alias('COUNT_2016'),col('2017').alias('COUNT_2017'),col('2018').alias('COUNT_2018'),col('2019').alias('COUNT_2019'),'OLS_COEFF')
 
