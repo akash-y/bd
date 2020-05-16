@@ -117,7 +117,7 @@ if __name__ == "__main__":
                               df_centerline['BOROCODE'] == df_violations['Violation County'], 
                               df_violations['Odd_Even'] == df_centerline['Odd_Even'],
                               (df_violations['House Number'] >= df_centerline['LOW_HN'])&(df_violations['House Number'] <= df_centerline['HIGH_HN'])
-                             ]).groupby(df_centerline['PHYSICALID']).pivot("Issue Date").count().sort('PHYSICALID')
+                             ],how = 'right').groupby(df_centerline['PHYSICALID']).pivot("Issue Date").count().sort('PHYSICALID')
 
     columns_to_drop = ['Issue Date']
 
