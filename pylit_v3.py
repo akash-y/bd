@@ -238,7 +238,7 @@ if __name__ == "__main__":
     counts = rdd.mapPartitionsWithIndex(ticketprocess)
     counts2 = rdd2.mapPartitionsWithIndex(streetprocess)
 
-    violations_df = spark.createDataFrame(counts, schema=('house_number','split_val','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even')).dropDuplicates()
+    violations_df = spark.createDataFrame(counts, schema=('house_number','split_val','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even'))
 
     violations_df.cache()
     
