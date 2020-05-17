@@ -35,8 +35,8 @@ def ticketprocess(pid,records):
         
         try:
         
-            street_name = str(row[25].upper())
-            year = str(dateutil.parser.parse(row[5]).year)
+            street_name = str(row[24].upper())
+            year = str(dateutil.parser.parse(row[4]).year)
             
             Y2015 = 0
             Y2016 = 0
@@ -60,18 +60,18 @@ def ticketprocess(pid,records):
                 
  
         
-            if row[22] in boro_dict.keys():
-                boro = int(boro_dict[row[22]])
+            if row[21] in boro_dict.keys():
+                boro = int(boro_dict[row[21]])
         
         except:
             continue
             
         try:
-            if row[24]:
-                if row[24].isalpha():
+            if row[23]:
+                if row[23].isalpha():
                     continue
             
-                split = row[24].replace('-',' ').split()
+                split = row[23].replace('-',' ').split()
                 combined = [int(val) for val in split]
             
             
@@ -107,18 +107,18 @@ def streetprocess(pid,records):
     
     for row in reader:
         
-        physical_id = int(row[4])
-        street_name = str(row[29].upper())
-        boro_code = int(row[14])
-        st_name = str(row[30].upper())
+        physical_id = int(row[0])
+        street_name = str(row[28].upper())
+        boro_code = int(row[13])
+        st_name = str(row[29].upper())
                 
         try:  
-            if row[1]:
+            if row[2]:
                
-                if row[1].isalpha():
+                if row[2].isalpha():
                     continue
                     
-                ll_split = row[1].replace('-',' ').split()
+                ll_split = row[2].replace('-',' ').split()
                 ll_combined = [int(val) for val in ll_split]
                     
                 ll_hno = ll_combined[-1]
@@ -135,12 +135,12 @@ def streetprocess(pid,records):
             else:
                 continue
                 
-            if row[2]:
+            if row[3]:
                     
-                if row[2].isalpha():
+                if row[3].isalpha():
                     continue
                     
-                lh_split = row[2].replace('-',' ').split()
+                lh_split = row[3].replace('-',' ').split()
                 lh_combined = [int(val) for val in lh_split]
                     
                 lh_hno = lh_combined[-1]
@@ -153,12 +153,12 @@ def streetprocess(pid,records):
             else:
                 continue
                 
-            if row[5]:
+            if row[4]:
                     
-                if row[5].isalpha():
+                if row[4].isalpha():
                     continue
                     
-                rl_split = row[5].replace('-',' ').split()
+                rl_split = row[4].replace('-',' ').split()
                 rl_combined = [int(val) for val in rl_split]
                     
                 rl_hno = rl_combined[-1]
@@ -176,12 +176,12 @@ def streetprocess(pid,records):
             else:
                 continue
                         
-            if row[6]:
+            if row[5]:
                     
-                if row[6].isalpha():
+                if row[5].isalpha():
                     continue
                     
-                rh_split = row[6].replace('-',' ').split()
+                rh_split = row[5].replace('-',' ').split()
                 rh_combined = [int(val) for val in rh_split]
                     
                 rh_hno = rh_combined[-1]
