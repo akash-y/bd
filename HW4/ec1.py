@@ -93,7 +93,7 @@ if __name__== "__main__":
 
     sys_output = sys.argv[1]
 
-    weet = sc.textFile('tweets-100m.csv')      
+    weet = sc.textFile('hdfs:///tmp/bdm/tweets-100m.csv')      
     matchedtweet = weet.mapPartitions(filterWords) \
                     .reduceByKey(lambda x,y: x+y) \
                     .map(lambda x: (x[0][0],(x[1]/x[0][1])))  \
