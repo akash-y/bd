@@ -191,7 +191,7 @@ def streetprocess(pid,records):
                 else:
                     rh_split_val = 0
             
-                if ll_hno%2==0:
+                if rh_hno%2==0:
                     odd_even='even'
                 else:
                     odd_even='odd'
