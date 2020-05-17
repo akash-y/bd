@@ -73,7 +73,7 @@ def filterWords(records):
             
                 zone_pop = tract_id,pop
                 print("zone",zone)
-                if zone:
+                if zone != None:
                     counts[zone_pop] = counts.get(zone_pop, 0) + 1.0
                     
                     
