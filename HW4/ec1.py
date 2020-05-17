@@ -66,7 +66,6 @@ def filterWords(records):
         
                 
                 p = geom.Point(proj(float(lon), float(lat)))
-                print(p)
                 zone = findZone(p, index, zones)
                 
                 tract_id = zones.loc[0][0]
@@ -80,7 +79,8 @@ def filterWords(records):
                     
         except:
             continue
-
+            
+    print(counts)
     return counts.items()
 
 def toCSVLine(data):
