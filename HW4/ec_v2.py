@@ -2,6 +2,7 @@ from pyspark import SparkContext
 import sys 
 import csv
 
+
 def createIndex(shapefile):
     '''
     This function takes in a shapefile path, and return:
@@ -21,7 +22,6 @@ def createIndex(shapefile):
     return (index, zones)
     
     
-    
 def findZone(p, index, zones):
     '''
     findZone returned the ID of the shape (stored in 'zones' with
@@ -33,8 +33,8 @@ def findZone(p, index, zones):
         if zones.geometry[idx].contains(p):
             return idx
     return None
-
-
+    
+    
 def filterWords(records):
     
     import csv
@@ -86,21 +86,24 @@ def filterWords(records):
             
     print(counts)
     return counts.items()
-
+    
+    
 def toCSVLine(data):
     return ','.join(str(d) for d in data)
-                
-                
+    
+    
 if __name__== "__main__":
-
+    
     sc=SparkContext()
 
     sys_output = sys.argv[1]
-
-    weet = sc.textFile('hdfs:///tmp/bdm/tweets-100m.csv')      
-    matchedtweet = weet.mapPartitions(filterWords) \
-                    .reduceByKey(lambda x,y: x+y) \
-                    .map(lambda x: (x[0][0],(x[1]/x[0][1])))  \
-                    .sortByKey() \
-                    .map(toCSVLine) \
-                    .saveAsTextFile(sys_output)
+    
+    weet = sc.textFile('hdfs:///tmp/bdm/tweets-100m.csv')
+    weet.mapPartitions(filterWords) \
+        .reduceByKey(lambda x,y: x+y) \
+        .map(lambda x: (x[0][0],(x[1]/x[0][1])))  \
+        .sortByKey() \
+        .map(toCSVLine) \
+        .saveAsTextFile(sys_output)
+        
+   
