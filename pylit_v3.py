@@ -240,8 +240,12 @@ if __name__ == "__main__":
 
     violations_df = spark.createDataFrame(counts, schema=('house_number','split_val','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even'))
 
+    violations_df.cache()
+    
     centerline_df = spark.createDataFrame(counts2,schema=('physical_id','l_house_number','h_house_number','l_split_val','h_split_val','street_name','boro_code','odd_even')).sort('physical_id')
 
+    centerline_df.cache()
+    
     boro_condition = (violations_df.boro == centerline_df.boro_code)
 
     street_condition = (violations_df.street_name == centerline_df.street_name)
@@ -252,10 +256,16 @@ if __name__ == "__main__":
 
     house_condition = (violations_df.house_number >= centerline_df.l_house_number)&(violations_df.house_number <= centerline_df.h_house_number)
 
-    final_df = violations_df.join(centerline_df,[boro_condition,street_condition,odd_even_condition,split_condition,house_condition],how='left').groupby(centerline_df.physical_id).agg(sum(violations_df.Y2015).alias('COUNT_2015'),sum(violations_df.Y2016).alias('COUNT_2016'),sum(violations_df.Y2017).alias('COUNT_2017'),sum(violations_df.Y2018).alias('COUNT_2018'),sum(violations_df.Y2019).alias('COUNT_2019')).sort("physical_id")
+    final_df = violations_df.join(f.broadcast(centerline_df),[boro_condition,street_condition,odd_even_condition,split_condition,house_condition],how='left').groupby(centerline_df.physical_id).agg(sum(violations_df.Y2015).alias('COUNT_2015'),sum(violations_df.Y2016).alias('COUNT_2016'),sum(violations_df.Y2017).alias('COUNT_2017'),sum(violations_df.Y2018).alias('COUNT_2018'),sum(violations_df.Y2019).alias('COUNT_2019')).sort("physical_id")
+    
+    final_df.cache()
 
     final_df = final_df.fillna(0)
 
+    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['sum(2015)'],final_df['sum(2016)'],final_df['sum(2017)'],final_df['sum(2018)'],final_df['sum(2019)'])))
 
+    final_df = final_df.select('PHYSICALID',col('sum(2015)').alias('COUNT_2015'),col('sum(2016)').alias('COUNT_2016'),col('sum(2017)').alias('COUNT_2017'),col('sum(2018)').alias('COUNT_2018'),col('sum(2019)').alias('COUNT_2019'),'OLS_COEFF')
+    
+    
     final_df.show(1000)
     print('time taken:', time.time() - start_time)
