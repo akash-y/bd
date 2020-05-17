@@ -21,7 +21,8 @@ def createIndex(shapefile):
     return (index, zones)
     
     
-    def findZone(p, index, zones):
+    
+def findZone(p, index, zones):
     '''
     findZone returned the ID of the shape (stored in 'zones' with
     'index') that contains the given point 'p'. If there's no match,
@@ -32,6 +33,7 @@ def createIndex(shapefile):
         if zones.geometry[idx].contains(p):
             return idx
     return None
+
 
 def filterWords(records):
     
