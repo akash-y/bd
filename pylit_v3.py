@@ -230,7 +230,7 @@ if __name__ == "__main__":
     sc = SparkContext()
     spark = SparkSession(sc)
     
-    #sys_output = sys.argv[1]
+    sys_output = sys.argv[1]
 
     rdd = sc.textFile('hdfs:///tmp/bdm/nyc_parking_violation/')
     rdd2 = sc.textFile('hdfs:///tmp/bdm/nyc_cscl.csv')
@@ -265,6 +265,6 @@ if __name__ == "__main__":
     #final_df = final_df.select('PHYSICALID',col('sum(2015)').alias('COUNT_2015'),col('sum(2016)').alias('COUNT_2016'),col('sum(2017)').alias('COUNT_2017'),col('sum(2018)').alias('COUNT_2018'),col('sum(2019)').alias('COUNT_2019'),'OLS_COEFF')
     
     
-    final_df.show(1000)
+    final_df.write.csv(sys_output)
     
     print('time taken:', time.time() - start_time)
