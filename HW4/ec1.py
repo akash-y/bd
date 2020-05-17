@@ -68,12 +68,14 @@ def filterWords(records):
                 p = geom.Point(proj(float(lon), float(lat)))
                 zone = findZone(p, index, zones)
                 
-                tract_id = zones.loc[0][0]
-                pop = zones.loc[0][1]
+                if zone:
+                
+                    tract_id = zones.loc[0][0]
+                    pop = zones.loc[0][1]
             
-                zone_pop = tract_id,pop
-                print("zone",zone)
-                if zone != None:
+                    zone_pop = tract_id,pop
+                    print("zone",zone)
+
                     counts[zone_pop] = counts.get(zone_pop, 0) + 1.0
                     
                     
