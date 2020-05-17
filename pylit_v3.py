@@ -252,19 +252,17 @@ if __name__ == "__main__":
 
     odd_even_condition = (violations_df.odd_even == centerline_df.odd_even)
 
-    split_condition = (violations_df.split_val >= centerline_df.l_split_val)&(violations_df.split_val <= centerline_df.h_split_val)
+    house_condition = ((violations_df.split_val >= centerline_df.l_split_val)&(violations_df.split_val <= centerline_df.h_split_val)&(violations_df.house_number >= centerline_df.l_house_number)&(violations_df.house_number <= centerline_df.h_house_number))
 
-    house_condition = (violations_df.house_number >= centerline_df.l_house_number)&(violations_df.house_number <= centerline_df.h_house_number)
-
-    final_df = violations_df.join(f.broadcast(centerline_df),[boro_condition,street_condition,odd_even_condition,split_condition,house_condition],how='left').groupby(centerline_df.physical_id).agg(sum(violations_df.Y2015).alias('COUNT_2015'),sum(violations_df.Y2016).alias('COUNT_2016'),sum(violations_df.Y2017).alias('COUNT_2017'),sum(violations_df.Y2018).alias('COUNT_2018'),sum(violations_df.Y2019).alias('COUNT_2019')).sort("physical_id")
+    final_df = violations_df.join(f.broadcast(centerline_df),[boro_condition,street_condition,odd_even_condition,house_condition],how='left').groupby(centerline_df.physical_id).agg(sum(violations_df.Y2015).alias('COUNT_2015'),sum(violations_df.Y2016).alias('COUNT_2016'),sum(violations_df.Y2017).alias('COUNT_2017'),sum(violations_df.Y2018).alias('COUNT_2018'),sum(violations_df.Y2019).alias('COUNT_2019')).sort("physical_id")
     
     final_df.cache()
 
     final_df = final_df.fillna(0)
 
-    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['sum(2015)'],final_df['sum(2016)'],final_df['sum(2017)'],final_df['sum(2018)'],final_df['sum(2019)'])))
+    final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['COUNT_2015'],final_df['COUNT_2016'],final_df['COUNT_2017'],final_df['COUNT_2018'],final_df['COUNT_2019'])))
 
-    final_df = final_df.select('PHYSICALID',col('sum(2015)').alias('COUNT_2015'),col('sum(2016)').alias('COUNT_2016'),col('sum(2017)').alias('COUNT_2017'),col('sum(2018)').alias('COUNT_2018'),col('sum(2019)').alias('COUNT_2019'),'OLS_COEFF')
+    #final_df = final_df.select('PHYSICALID',col('sum(2015)').alias('COUNT_2015'),col('sum(2016)').alias('COUNT_2016'),col('sum(2017)').alias('COUNT_2017'),col('sum(2018)').alias('COUNT_2018'),col('sum(2019)').alias('COUNT_2019'),'OLS_COEFF')
     
     
     final_df.show(1000)
