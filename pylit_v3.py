@@ -1,3 +1,4 @@
+#Importing needed libraries
 from pyspark import SparkContext
 from pyspark.sql.session import SparkSession
 import pyspark.sql.functions as f
@@ -14,19 +15,22 @@ import sys
 import time
 import csv
 
+#Specifying start time to calculate time taken
 start_time = time.time()
 
+#Processing violations dataset 
 def ticketprocess(pid,records):
     
     import dateutil.parser 
     
-    
+  
+#Creating boro dictionary
     boro_dict = {'MAN':1,'MH':1,'MN':1,'NEWY':1,'NEW Y':1,'NY':1,
                 'BRONX':2,'BX':2,
                 'BK':3,'K':3,'KING':3,'KINGS':3,
                 'Q':4,'QN':4,'QNS':4,'QU':4,'QUEEN':4,
                 'R':5,'RICHMOND':5}
-    
+ 
     if pid == 0:
         next(records)
     reader = csv.reader(records)
@@ -34,17 +38,21 @@ def ticketprocess(pid,records):
     for row in reader:
         
         try:
-        
+
+#Extracting street_name, year
+
             street_name = str(row[24].upper())
             year = str(dateutil.parser.parse(row[4]).year)
+
             
+#Extracting year details for easier joins            
+
             Y2015 = 0
             Y2016 = 0
             Y2017 = 0
             Y2018 = 0
             Y2019 = 0
     
-            
             if year == '2015':
                 Y2015 = 1
             elif year == '2016':
@@ -97,7 +105,7 @@ def ticketprocess(pid,records):
         
         yield house_number,split_val,Y2015,Y2016,Y2017,Y2018,Y2019,boro,street_name,odd_even
        
-    
+#Extracting street details from centerline dataset
 def streetprocess(pid,records):
     
     if pid ==0:
@@ -106,12 +114,14 @@ def streetprocess(pid,records):
     reader = csv.reader(records)
     
     for row in reader:
-        
+    
+#Extracting street details 
         physical_id = int(row[0])
         street_name = str(row[28].upper())
         boro_code = int(row[13])
         st_name = str(row[29].upper())
-                
+       
+#Extracting house details - LH,LL,RL and RH along with their respective split values and if the house numbers are odd or even
         try:  
             if row[2]:
                
@@ -202,13 +212,16 @@ def streetprocess(pid,records):
                         
         except:
             continue
-            
+ 
+#Yielding 4 times for easier joins
+
         yield physical_id,ll_hno,lh_hno,ll_split_val,lh_split_val,street_name,boro_code,odd_even
         yield physical_id,ll_hno,lh_hno,ll_split_val,lh_split_val,st_name,boro_code,odd_even                
         yield physical_id,rl_hno,rh_hno,rl_split_val,rh_split_val,street_name,boro_code,odd_even                
         yield physical_id,rl_hno,rh_hno,rl_split_val,rh_split_val,st_name,boro_code,odd_even 
         
         
+#Creating slope calculations
 def func_slope(v1,v2,v3,v4,v5):
     
     try:
@@ -238,6 +251,8 @@ if __name__ == "__main__":
     counts = rdd.mapPartitionsWithIndex(ticketprocess)
     counts2 = rdd2.mapPartitionsWithIndex(streetprocess)
 
+    #Converting into Dfs
+    
     violations_df = spark.createDataFrame(counts, schema=('house_number','split_val','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even'))
 
     violations_df.cache()
@@ -245,6 +260,8 @@ if __name__ == "__main__":
     centerline_df = spark.createDataFrame(counts2,schema=('physical_id','l_house_number','h_house_number','l_split_val','h_split_val','street_name','boro_code','odd_even')).dropDuplicates().sort('physical_id')
 
     centerline_df.cache()
+    
+    #Specifying Join Conditions 
     
     boro_condition = (violations_df.boro == centerline_df.boro_code)
 
@@ -258,13 +275,15 @@ if __name__ == "__main__":
     
     final_df.cache()
 
+    #Fill NA values with 0
     final_df = final_df.fillna(0)
 
+    #Finding slope coefficient
     final_df = final_df.withColumn('OLS_COEFF', lit(calculate_slope_udf(final_df['COUNT_2015'],final_df['COUNT_2016'],final_df['COUNT_2017'],final_df['COUNT_2018'],final_df['COUNT_2019'])))
 
     #final_df = final_df.select('PHYSICALID',col('sum(2015)').alias('COUNT_2015'),col('sum(2016)').alias('COUNT_2016'),col('sum(2017)').alias('COUNT_2017'),col('sum(2018)').alias('COUNT_2018'),col('sum(2019)').alias('COUNT_2019'),'OLS_COEFF')
     
-    
+    #Returning output
     final_df.write.csv(sys_output)
     
     print('time taken:', time.time() - start_time)
