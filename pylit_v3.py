@@ -238,11 +238,11 @@ if __name__ == "__main__":
     counts = rdd.mapPartitionsWithIndex(ticketprocess)
     counts2 = rdd2.mapPartitionsWithIndex(streetprocess)
 
-    violations_df = spark.createDataFrame(counts, schema=('house_number','split_val','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even'))
+    violations_df = spark.createDataFrame(counts, schema=('house_number','split_val','Y2015','Y2016','Y2017','Y2018','Y2019','boro','street_name','odd_even')).dropDuplicates()
 
     violations_df.cache()
     
-    centerline_df = spark.createDataFrame(counts2,schema=('physical_id','l_house_number','h_house_number','l_split_val','h_split_val','street_name','boro_code','odd_even')).sort('physical_id')
+    centerline_df = spark.createDataFrame(counts2,schema=('physical_id','l_house_number','h_house_number','l_split_val','h_split_val','street_name','boro_code','odd_even')).dropDuplicates().sort('physical_id')
 
     centerline_df.cache()
     
